@@ -17,7 +17,8 @@ import '@nomiclabs/hardhat-waffle';
   },
   namedAccounts: {
     deployer: 0,
-    multisig: "0xA5fC0BbfcD05827ed582869b7254b6f141BA84Eb"
+    ironBankToken: '0x00a35FD824c717879BF370E70AC6868b95870Dfb',
+    multisig: '0xA5fC0BbfcD05827ed582869b7254b6f141BA84Eb'
   },
   networks: {
     hardhat: {
