@@ -7,9 +7,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const { deployer, ironBankToken } = await getNamedAccounts();
 
+  const tokenDescriptor = await get('TokenDescriptor');
+
   await deploy("ve", {
     from: deployer,
-    args: [ironBankToken],
+    args: [ironBankToken, tokenDescriptor.address],
     log: true,
   });
 };
