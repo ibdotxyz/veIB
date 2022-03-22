@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity 0.8.11;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 /*
 
 @title Curve Fee Distribution modified for ve(3,3) emissions
@@ -8,17 +11,6 @@ pragma solidity 0.8.11;
 @license MIT
 
 */
-
-interface erc20 {
-    function totalSupply() external view returns (uint256);
-    function transfer(address recipient, uint amount) external returns (bool);
-    function decimals() external view returns (uint8);
-    function symbol() external view returns (string memory);
-    function balanceOf(address) external view returns (uint);
-    function transferFrom(address sender, address recipient, uint amount) external returns (bool);
-    function approve(address spender, uint value) external returns (bool);
-}
-
 library Math {
     function min(uint a, uint b) internal pure returns (uint) {
         return a < b ? a : b;
@@ -44,9 +36,11 @@ interface VotingEscrow {
     function checkpoint() external;
     function deposit_for(uint tokenId, uint value) external;
     function token() external view returns (address);
+    function ownerOf(uint _tokenId) external view returns (address);
 }
 
-contract ve_dist {
+contract fee_dist {
+    using SafeERC20 for IERC20;
 
     event CheckpointToken(
         uint time,
@@ -78,16 +72,14 @@ contract ve_dist {
 
     address public depositor;
 
-    constructor(address _voting_escrow) {
+    constructor(address _voting_escrow, address _token) {
         uint _t = block.timestamp / WEEK * WEEK;
         start_time = _t;
         last_token_time = _t;
         time_cursor = _t;
-        address _token = VotingEscrow(_voting_escrow).token();
         token = _token;
         voting_escrow = _voting_escrow;
         depositor = msg.sender;
-        erc20(_token).approve(_voting_escrow, type(uint).max);
     }
 
     function timestamp() external view returns (uint) {
@@ -95,7 +87,7 @@ contract ve_dist {
     }
 
     function _checkpoint_token() internal {
-        uint token_balance = erc20(token).balanceOf(address(this));
+        uint token_balance = IERC20(token).balanceOf(address(this));
         uint to_distribute = token_balance - token_last_balance;
         token_last_balance = token_balance;
 
@@ -318,7 +310,8 @@ contract ve_dist {
         _last_token_time = _last_token_time / WEEK * WEEK;
         uint amount = _claim(_tokenId, voting_escrow, _last_token_time);
         if (amount != 0) {
-            VotingEscrow(voting_escrow).deposit_for(_tokenId, amount);
+            address ve_owner = VotingEscrow(voting_escrow).ownerOf(_tokenId);
+            IERC20(token).safeTransfer(ve_owner, amount);
             token_last_balance -= amount;
         }
         return amount;
@@ -336,7 +329,8 @@ contract ve_dist {
             if (_tokenId == 0) break;
             uint amount = _claim(_tokenId, _voting_escrow, _last_token_time);
             if (amount != 0) {
-                VotingEscrow(_voting_escrow).deposit_for(_tokenId, amount);
+                address ve_owner = VotingEscrow(voting_escrow).ownerOf(_tokenId);
+                IERC20(token).safeTransfer(ve_owner, amount);
                 total += amount;
             }
         }
