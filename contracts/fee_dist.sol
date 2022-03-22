@@ -54,6 +54,9 @@ contract fee_dist {
         uint max_epoch
     );
 
+    event NewPendingAdmin(address old_pending_admin, address new_pending_admin);
+    event NewAdmin(address old_admin, address new_admin);
+
     uint constant WEEK = 7 * 86400;
 
     uint public start_time;
@@ -70,7 +73,8 @@ contract fee_dist {
 
     uint[1000000000000000] public ve_supply;
 
-    address public depositor;
+    address public admin;
+    address public pending_admin;
 
     /// @dev reentrancy guard
     uint8 internal constant _not_entered = 1;
@@ -83,14 +87,14 @@ contract fee_dist {
         _entered_state = _not_entered;
     }
 
-    constructor(address _voting_escrow, address _token) {
+    constructor(address _voting_escrow, address _token, address _admin) {
         uint _t = block.timestamp / WEEK * WEEK;
         start_time = _t;
         last_token_time = _t;
         time_cursor = _t;
         token = _token;
         voting_escrow = _voting_escrow;
-        depositor = msg.sender;
+        admin = _admin;
     }
 
     function timestamp() external view returns (uint) {
@@ -131,7 +135,7 @@ contract fee_dist {
     }
 
     function checkpoint_token() external {
-        assert(msg.sender == depositor);
+        assert(msg.sender == admin);
         _checkpoint_token();
     }
 
@@ -352,9 +356,18 @@ contract fee_dist {
         return true;
     }
 
-    // Once off event on contract initialize
-    function setDepositor(address _depositor) external {
-        require(msg.sender == depositor);
-        depositor = _depositor;
+    function set_pending_admin(address _addr) external {
+        require(msg.sender == admin);
+        address old_pending_admin = pending_admin;
+        pending_admin = _addr;
+        emit NewPendingAdmin(old_pending_admin, pending_admin);
+    }
+
+    function accept_admin() external {
+        require(msg.sender == pending_admin);
+        address old_admin = admin;
+        admin = pending_admin;
+        pending_admin = address(0);
+        emit NewAdmin(old_admin, admin);
     }
 }
