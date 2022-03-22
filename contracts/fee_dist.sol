@@ -72,6 +72,17 @@ contract fee_dist {
 
     address public depositor;
 
+    /// @dev reentrancy guard
+    uint8 internal constant _not_entered = 1;
+    uint8 internal constant _entered = 2;
+    uint8 internal _entered_state = 1;
+    modifier nonreentrant() {
+        require(_entered_state == _not_entered);
+        _entered_state = _entered;
+        _;
+        _entered_state = _not_entered;
+    }
+
     constructor(address _voting_escrow, address _token) {
         uint _t = block.timestamp / WEEK * WEEK;
         start_time = _t;
@@ -304,7 +315,7 @@ contract fee_dist {
         return _claimable(_tokenId, voting_escrow, _last_token_time);
     }
 
-    function claim(uint _tokenId) external returns (uint) {
+    function claim(uint _tokenId) external nonreentrant returns (uint) {
         if (block.timestamp >= time_cursor) _checkpoint_total_supply();
         uint _last_token_time = last_token_time;
         _last_token_time = _last_token_time / WEEK * WEEK;
@@ -317,7 +328,7 @@ contract fee_dist {
         return amount;
     }
 
-    function claim_many(uint[] memory _tokenIds) external returns (bool) {
+    function claim_many(uint[] memory _tokenIds) external nonreentrant returns (bool) {
         if (block.timestamp >= time_cursor) _checkpoint_total_supply();
         uint _last_token_time = last_token_time;
         _last_token_time = _last_token_time / WEEK * WEEK;
