@@ -90,8 +90,8 @@ contract fee_dist {
         _entered_state = _not_entered;
     }
 
-    constructor(address _voting_escrow, address _token, address _admin, address _emergency_return) {
-        uint _t = block.timestamp / WEEK * WEEK;
+    constructor(address _voting_escrow, uint256 _start_time, address _token, address _admin, address _emergency_return) {
+        uint _t = _start_time / WEEK * WEEK;
         start_time = _t;
         last_token_time = _t;
         time_cursor = _t;
