@@ -75,6 +75,9 @@ contract fee_dist {
 
     address public admin;
     address public pending_admin;
+    address public emergency_return;
+
+    bool public is_killed;
 
     /// @dev reentrancy guard
     uint8 internal constant _not_entered = 1;
@@ -87,7 +90,7 @@ contract fee_dist {
         _entered_state = _not_entered;
     }
 
-    constructor(address _voting_escrow, address _token, address _admin) {
+    constructor(address _voting_escrow, address _token, address _admin, address _emergency_return) {
         uint _t = block.timestamp / WEEK * WEEK;
         start_time = _t;
         last_token_time = _t;
@@ -95,6 +98,7 @@ contract fee_dist {
         token = _token;
         voting_escrow = _voting_escrow;
         admin = _admin;
+        emergency_return = _emergency_return;
     }
 
     function timestamp() external view returns (uint) {
@@ -320,6 +324,7 @@ contract fee_dist {
     }
 
     function claim(uint _tokenId) external nonreentrant returns (uint) {
+        require(!is_killed, "killed");
         if (block.timestamp >= time_cursor) _checkpoint_total_supply();
         uint _last_token_time = last_token_time;
         _last_token_time = _last_token_time / WEEK * WEEK;
@@ -333,6 +338,7 @@ contract fee_dist {
     }
 
     function claim_many(uint[] memory _tokenIds) external nonreentrant returns (bool) {
+        require(!is_killed, "killed");
         if (block.timestamp >= time_cursor) _checkpoint_total_supply();
         uint _last_token_time = last_token_time;
         _last_token_time = _last_token_time / WEEK * WEEK;
@@ -369,5 +375,19 @@ contract fee_dist {
         admin = pending_admin;
         pending_admin = address(0);
         emit NewAdmin(old_admin, admin);
+    }
+
+    function kill_me() external {
+        require(msg.sender == admin);
+        is_killed = true;
+        uint amount = IERC20(token).balanceOf(address(this));
+        IERC20(token).safeTransfer(emergency_return, amount);
+    }
+
+    function recover_balance(address _coin) external {
+        require(msg.sender == admin);
+        require(_coin != token);
+        uint256 amount = IERC20(_coin).balanceOf(address(this));
+        IERC20(_coin).safeTransfer(admin, amount);
     }
 }
