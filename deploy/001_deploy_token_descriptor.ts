@@ -5,7 +5,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
   const { deploy, get } = deployments;
 
-  const { deployer, ironBankToken } = await getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   await deploy("TokenDescriptor", {
     from: deployer,
