@@ -15,7 +15,9 @@ describe("ve", function () {
     await ve_underlying.deployed();
     await ve_underlying.mint(owner.address, ve_underlying_amount);
     vecontract = await ethers.getContractFactory("contracts/ve.sol:ve");
-    ve = await vecontract.deploy(ve_underlying.address);
+    let tokenDescriptorFactory = await ethers.getContractFactory("TokenDescriptor");
+    let tokenDescriptor = await tokenDescriptorFactory.deploy();
+    ve = await vecontract.deploy(ve_underlying.address, tokenDescriptor.address);
     await ve.deployed();
   });
 
