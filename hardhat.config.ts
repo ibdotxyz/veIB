@@ -29,7 +29,8 @@ import '@nomiclabs/hardhat-waffle';
   networks: {
     hardhat: {
       forking: {
-        url: `https://rpc.ftm.tools/`
+        url: `https://rpc.ftm.tools/`,
+        enabled: false,
       }
     },
     ftm: {
