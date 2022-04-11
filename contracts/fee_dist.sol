@@ -391,3 +391,28 @@ contract fee_dist {
         IERC20(_coin).safeTransfer(admin, amount);
     }
 }
+
+contract FeeDistFactory {
+
+    event FeeDistCreated(
+        address indexed dist,
+        address indexed ve,
+        address indexed token,
+        uint256 startTime,
+        address admin,
+        address emergencyReturn
+    );
+
+    function createFeeDist(address ve,
+        uint256[] calldata startTimes,
+        address[] calldata tokens,
+        address[] calldata admins,
+        address[] calldata emergencyReturns
+    ) external {
+      for (uint256 i = 0; i < startTimes.length; i++) {
+          address dist = address(new fee_dist(ve, startTimes[i], tokens[i], admins[i], emergencyReturns[i]));
+          emit FeeDistCreated(dist, ve, tokens[i], startTimes[i], admins[i], emergencyReturns[i]);
+      }
+    }
+
+}
