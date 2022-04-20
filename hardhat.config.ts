@@ -18,10 +18,12 @@ import '@nomiclabs/hardhat-waffle';
   namedAccounts: {
     deployer: 0,
     ironBankToken: {
+      hardhat: '0x00a35FD824c717879BF370E70AC6868b95870Dfb',
       ftm: '0x00a35FD824c717879BF370E70AC6868b95870Dfb',
       testnet: '0xb1f656B82507cd07daBD71f966294E2262B465AD'
     },
     multisig: {
+      hardhat: '0xA5fC0BbfcD05827ed582869b7254b6f141BA84Eb',
       ftm: '0xA5fC0BbfcD05827ed582869b7254b6f141BA84Eb',
       testnet: 0
     }
