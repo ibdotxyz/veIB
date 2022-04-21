@@ -35,7 +35,7 @@ import '@nomiclabs/hardhat-waffle';
         enabled: false,
       }
     },
-    ftm: {
+    fantom: {
       url: 'https://rpc.ftm.tools/',
       accounts:
         process.env.DEPLOY_PRIVATE_KEY == undefined ? [] : [`0x${process.env.DEPLOY_PRIVATE_KEY}`]

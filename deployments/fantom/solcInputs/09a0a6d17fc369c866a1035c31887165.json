@@ -1,0 +1,35 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/ClaimHelper.sol": {
+      "content": "// SPDX-License-Identifier: MIT\npragma solidity 0.8.11;\n\ninterface fee_dist {\n    function claim(uint _tokenId) external returns (uint);\n}\n\n\ncontract ClaimHelper {\n\n    function claim(address[] calldata fee_dists, uint[] calldata tokenIds) external {\n        for (uint i = 0; i < fee_dists.length; i++) {\n          fee_dist(fee_dists[i]).claim(tokenIds[i]);\n        }\n    }\n\n}\n"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}
